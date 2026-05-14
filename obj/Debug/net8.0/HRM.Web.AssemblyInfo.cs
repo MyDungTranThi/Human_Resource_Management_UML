@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HRM.Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+39d2c4e23c647c3007f3a5b39eae9ad24ffef5cd")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+97e5754eec41d3e42c1b8f33d7f85dea1a7d13e4")]
 [assembly: System.Reflection.AssemblyProductAttribute("HRM.Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HRM.Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

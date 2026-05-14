@@ -41,10 +41,13 @@
                 </div>
 
                 <nav class="app-nav">
-                    <a class="@NavClass(currentController == "Dashboard")" asp-controller="Dashboard" asp-action="Index">
-                        <i class="bi bi-grid-1x2-fill"></i>
-                        <span>Bảng điều khiển</span>
-                    </a>
+                    @if (User.HasAnyRole(AppRoles.Admin))
+                    {
+                        <a class="@NavClass(currentController == "Dashboard")" asp-controller="Dashboard" asp-action="Index">
+                            <i class="bi bi-grid-1x2-fill"></i>
+                            <span>Bảng điều khiển</span>
+                        </a>
+                    }
 
                     @if (canUseHr)
                     {

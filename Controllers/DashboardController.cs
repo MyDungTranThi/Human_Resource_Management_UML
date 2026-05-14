@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using HRM.Web.Models.Constants;
+
 namespace HRM.Web.Controllers;
 
-[Authorize]
+[Authorize(Roles = AppRoles.Admin)]
 public class DashboardController : Controller
 {
     private readonly HRMDbContext _context;
