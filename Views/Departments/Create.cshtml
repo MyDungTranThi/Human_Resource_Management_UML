@@ -1,0 +1,20 @@
+@model HRM.Web.Models.ViewModels.Departments.DepartmentFormViewModel
+@{
+    ViewData["Title"] = "Them phong ban";
+}
+
+<h2 class="mb-3">Them phong ban</h2>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    <partial name="_DepartmentForm" model="Model" />
+
+    <div class="d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Luu</button>
+        <a class="btn btn-secondary" asp-action="Index">Quay lai</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

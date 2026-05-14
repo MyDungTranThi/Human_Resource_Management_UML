@@ -1,0 +1,135 @@
+@model HRM.Web.Models.ViewModels.Employees.EmployeeIndexViewModel
+@{
+    ViewData["Title"] = "Danh sách nhân sự";
+}
+
+<div class="page-head page-head-actions">
+    <div>
+        <h1>Danh sách nhân sự</h1>
+        <p>Quản lý nhân sự, vai trò và trạng thái nhân viên.</p>
+    </div>
+    <div class="head-actions">
+        <a class="secondary-btn" asp-action="ExportPdf" asp-route-search="@Model.Search"><i class="bi bi-filetype-pdf"></i> Xuất PDF</a>
+        <a class="secondary-btn" asp-action="ExportExcel" asp-route-search="@Model.Search"><i class="bi bi-file-earmark-excel"></i> Xuất Excel</a>
+        <a class="primary-btn" asp-action="Create"><i class="bi bi-person-plus-fill"></i> Thêm nhân sự</a>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(TempData["Success"] as string))
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (!string.IsNullOrWhiteSpace(TempData["Error"] as string))
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<section class="panel mb-4">
+    <form method="get" class="filter-grid">
+        <div>
+            <label class="form-label">Tìm kiếm</label>
+            <input class="form-control" name="search" value="@Model.Search" placeholder="Tìm theo tên, email, điện thoại, trạng thái..." />
+        </div>
+        <div>
+            <label class="form-label">Số dòng</label>
+            <select class="form-select" name="pageSize">
+                @foreach (var size in new[] { 10, 20, 50 })
+                {
+                    <option value="@size" selected="@(Model.PageSize == size)">@size</option>
+                }
+            </select>
+        </div>
+        <div class="filter-actions">
+            <button class="primary-btn" type="submit"><i class="bi bi-funnel-fill"></i> Áp dụng bộ lọc</button>
+            <a class="secondary-btn" asp-action="Index">Xóa</a>
+        </div>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="table-responsive">
+        <table class="table table-modern align-middle">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tên nhân viên</th>
+                    <th>Email</th>
+                    <th>Phòng ban</th>
+                    <th>Chức vụ</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.PagedEmployees.Items.Count == 0)
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">Không tìm thấy nhân viên nào.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var employee in Model.PagedEmployees.Items)
+                    {
+                        var rawStatus = (employee.Status ?? string.Empty).ToLowerInvariant();
+                        var statusClass = rawStatus.Contains("working") ? "active" : rawStatus.Contains("leave") ? "pending" : rawStatus.Contains("resigned") ? "terminated" : "processed";
+
+                        <tr>
+                            <td>#@employee.EmpId</td>
+                            <td>
+                                <div class="person-cell">
+                                    <div class="avatar-mini">@employee.Name.Substring(0, 1).ToUpperInvariant()</div>
+                                    <div>
+                                        <div class="fw-semibold">@employee.Name</div>
+                                        <small>@employee.PhoneNumber</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@employee.Email</td>
+                            <td>@employee.Dept.DeptName</td>
+                            <td>@(employee.Pos.FirstOrDefault()?.PosName ?? "Chưa có")</td>
+                            <td><span class="status-tag @statusClass">@employee.Status</span></td>
+                            <td>
+                                <div class="action-inline">
+                                    <a class="icon-link" asp-action="Edit" asp-route-id="@employee.EmpId" title="Chỉnh sửa"><i class="bi bi-pencil"></i></a>
+                                    <form asp-action="Delete" asp-route-id="@employee.EmpId" method="post" onsubmit="return confirm('Xóa nhân viên này?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="icon-link danger" title="Xóa"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.PagedEmployees.TotalPages > 1)
+    {
+        <nav class="pager-wrap">
+            <span>Trang @Model.PagedEmployees.Page trên @Model.PagedEmployees.TotalPages</span>
+            <ul class="pagination mb-0">
+                @for (var i = 1; i <= Model.PagedEmployees.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.PagedEmployees.Page ? "active" : string.Empty)">
+                        <a class="page-link" asp-action="Index" asp-route-search="@Model.Search" asp-route-page="@i" asp-route-pageSize="@Model.PageSize">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</section>
+
+<section class="panel mt-4">
+    <h4>Số lượng nhân sự theo phòng ban</h4>
+    <div class="mini-stat-grid">
+        @foreach (var stat in Model.DepartmentStats)
+        {
+            <div class="mini-stat-card">
+                <span>@stat.DepartmentName</span>
+                <strong>@stat.EmployeeCount</strong>
+            </div>
+        }
+    </div>
+</section>

@@ -1,0 +1,139 @@
+@model HRM.Web.Models.ViewModels.Dashboard.DashboardViewModel
+@using HRM.Web.Models.Constants
+@{
+    ViewData["Title"] = "Bảng điều khiển";
+}
+
+<div class="page-head">
+    <div>
+        <h1>Bảng điều khiển</h1>
+        <p>Chào mừng, @User.Identity?.Name. Đây là tổng quan hoạt động nhân sự hôm nay.</p>
+    </div>
+</div>
+
+<section class="metric-grid">
+    <article class="metric-card">
+        <div class="metric-icon icon-blue"><i class="bi bi-people-fill"></i></div>
+        <div class="metric-label">Tổng số nhân sự</div>
+        <div class="metric-value">@Model.EmployeeCount.ToString("N0")</div>
+        <div class="metric-note">+4% so với tháng trước</div>
+    </article>
+
+    <article class="metric-card">
+        <div class="metric-icon icon-mint"><i class="bi bi-diagram-3-fill"></i></div>
+        <div class="metric-label">Dự án đang hoạt động</div>
+        <div class="metric-value">@Model.ActiveProjectCount.ToString("N0")</div>
+        <div class="metric-note">Tổng @Model.ProjectCount dự án</div>
+    </article>
+
+    <article class="metric-card">
+        <div class="metric-icon icon-peach"><i class="bi bi-cash-stack"></i></div>
+        <div class="metric-label">Tổng lương tháng</div>
+        <div class="metric-value">@Model.ThisMonthPayrollTotal.ToString("N0")</div>
+        <div class="metric-note">Đã xử lý</div>
+    </article>
+
+    <article class="metric-card">
+        <div class="metric-icon icon-violet"><i class="bi bi-person-plus-fill"></i></div>
+        <div class="metric-label">Số phòng ban</div>
+        <div class="metric-value">@Model.DepartmentCount</div>
+        <div class="metric-note">Đơn vị chức năng</div>
+    </article>
+</section>
+
+<section class="content-grid two-columns mt-4">
+    <article class="panel">
+        <div class="panel-head">
+            <h4>Xu hướng lương</h4>
+            <span class="chip">Năm 2026</span>
+        </div>
+        <div class="bar-chart">
+            <div style="height:32%"></div>
+            <div style="height:48%"></div>
+            <div style="height:45%"></div>
+            <div style="height:58%"></div>
+            <div style="height:54%"></div>
+            <div style="height:70%"></div>
+        </div>
+        <div class="bar-labels">
+            <span>Thg 1</span><span>Thg 2</span><span>Thg 3</span><span>Thg 4</span><span>Thg 5</span><span>Thg 6</span>
+        </div>
+    </article>
+
+    <article class="panel">
+        <h4>Phân bổ nhân sự</h4>
+        <div class="distribution-wrap">
+            <div class="donut"></div>
+            <ul>
+                <li><span class="dot blue"></span>Kỹ thuật (45%)</li>
+                <li><span class="dot mint"></span>Marketing (20%)</li>
+                <li><span class="dot violet"></span>Bán hàng (25%)</li>
+                <li><span class="dot peach"></span>Khác (10%)</li>
+            </ul>
+        </div>
+    </article>
+</section>
+
+<section class="content-grid two-columns mt-4">
+    <article class="panel">
+        <div class="panel-head">
+            <h4>Hoạt động gần đây</h4>
+            <a class="link-help" asp-controller="Reports" asp-action="Index">Xem tất cả</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-modern">
+                <thead>
+                    <tr>
+                        <th>Nhân viên</th>
+                        <th>Hoạt động</th>
+                        <th>Ngày</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Jane Doe<br /><small>Kỹ thuật</small></td>
+                        <td>Thăng chức lên Trưởng nhóm</td>
+                        <td>2 giờ trước</td>
+                        <td><span class="status-tag active">Đang hoạt động</span></td>
+                    </tr>
+                    <tr>
+                        <td>Robert Black<br /><small>Tài chính</small></td>
+                        <td>Lương tháng 11 đã được duyệt</td>
+                        <td>5 giờ trước</td>
+                        <td><span class="status-tag processed">Đã xử lý</span></td>
+                    </tr>
+                    <tr>
+                        <td>Elena Rossi<br /><small>Dự án</small></td>
+                        <td>Đã phân công vào Migration dữ liệu</td>
+                        <td>Hôm nay</td>
+                        <td><span class="status-tag pending">Chờ xử lý</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </article>
+
+    <article class="panel panel-highlight">
+        <h4>Lối tắt theo vai trò</h4>
+        <p>Vai trò hiện tại: <strong>@Model.CurrentRole</strong></p>
+
+        <div class="shortcut-grid">
+            @if (User.HasAnyRole(AppRoles.Admin, AppRoles.HR))
+            {
+                <a asp-controller="Employees" asp-action="Index" class="shortcut-btn"><i class="bi bi-people"></i> Danh sách nhân sự</a>
+            }
+            @if (User.HasAnyRole(AppRoles.Admin, AppRoles.Accountant))
+            {
+                <a asp-controller="Payroll" asp-action="Index" class="shortcut-btn"><i class="bi bi-calculator"></i> Trung tâm lương</a>
+            }
+            @if (User.HasAnyRole(AppRoles.Admin, AppRoles.Manager))
+            {
+                <a asp-controller="Projects" asp-action="Index" class="shortcut-btn"><i class="bi bi-kanban"></i> Quản lý dự án</a>
+                <a asp-controller="Departments" asp-action="Index" class="shortcut-btn"><i class="bi bi-diagram-3"></i> Quản lý phòng ban</a>
+            }
+            <a asp-controller="Reports" asp-action="Index" class="shortcut-btn"><i class="bi bi-bar-chart"></i> Báo cáo thống kê</a>
+        </div>
+    </article>
+</section>

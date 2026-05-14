@@ -1,0 +1,24 @@
+@model HRM.Web.Models.ViewModels.Projects.ProjectFormViewModel
+@{
+    ViewData["Title"] = "Chỉnh sửa dự án";
+}
+
+<div class="page-head">
+    <h1>Chỉnh sửa dự án #@Model.ProjId</h1>
+    <p>Cập nhật thông tin tiến độ và ngân sách cho dự án.</p>
+</div>
+
+<form asp-action="Edit" asp-route-id="@Model.ProjId" method="post">
+    @Html.AntiForgeryToken()
+    <input asp-for="ProjId" type="hidden" />
+    <partial name="_ProjectForm" model="Model" />
+
+    <div class="mt-4">
+        <button class="primary-btn" type="submit">Cập nhật</button>
+        <a class="secondary-btn" asp-action="Index">Quay lại</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

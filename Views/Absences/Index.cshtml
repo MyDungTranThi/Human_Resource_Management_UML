@@ -1,0 +1,101 @@
+@model HRM.Web.Models.ViewModels.Absences.AbsenceIndexViewModel
+@{
+    ViewData["Title"] = "Quản lý ngày nghỉ";
+}
+
+<div class="page-head page-head-actions">
+    <div>
+        <h1>Quản lý ngày nghỉ</h1>
+        <p>HR nhập tay các ngày nghỉ của nhân viên để tính khấu trừ lương.</p>
+    </div>
+    <div class="head-actions">
+        <a class="primary-btn" asp-action="Create"><i class="bi bi-plus-circle"></i> Thêm ngày nghỉ</a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<section class="panel mb-4">
+    <form method="get" class="filter-grid">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Tháng</label>
+                <select name="month" class="form-select">
+                    @for (int i = 1; i <= 12; i++)
+                    {
+                        <option value="@i" selected="@(Model.Month == i)">Tháng @i</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Năm</label>
+                <select name="year" class="form-select">
+                    @for (int i = 2024; i <= 2030; i++)
+                    {
+                        <option value="@i" selected="@(Model.Year == i)">@i</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Tìm kiếm</label>
+                <input name="search" class="form-control" value="@Model.Search" placeholder="Tên nhân viên, lý do..." />
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="primary-btn w-100">Lọc</button>
+            </div>
+        </div>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="table-responsive">
+        <table class="table table-modern">
+            <thead>
+                <tr>
+                    <th>Ngày nghỉ</th>
+                    <th>Nhân viên</th>
+                    <th>Lý do</th>
+                    <th>Trừ lương?</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Items.Any())
+                {
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">Không có dữ liệu nghỉ trong tháng này.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>@item.AbsenceDate.ToString("dd/MM/yyyy")</td>
+                            <td><strong>@item.Emp.Name</strong> <small>(#@item.EmpId)</small></td>
+                            <td>@item.Reason</td>
+                            <td>
+                                @if (item.IsUnpaid)
+                                {
+                                    <span class="badge bg-danger">Có (Nghỉ không lương)</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Không (Nghỉ có lương)</span>
+                                }
+                            </td>
+                            <td>
+                                <form asp-action="Delete" asp-route-id="@item.AbsenceId" method="post" onsubmit="return confirm('Xóa bản ghi này?');">
+                                    <button type="submit" class="icon-link danger"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

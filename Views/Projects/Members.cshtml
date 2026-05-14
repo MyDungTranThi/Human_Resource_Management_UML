@@ -1,0 +1,100 @@
+@model HRM.Web.Models.ViewModels.Projects.ProjectMembersViewModel
+@{
+    ViewData["Title"] = "Nhân sự dự án";
+}
+
+<div class="page-head page-head-actions">
+    <div>
+        <h1>Nhân sự dự án: @Model.ProjName</h1>
+        <p>Quản lý danh sách nhân sự tham gia triển khai dự án.</p>
+    </div>
+    <div class="head-actions">
+        <a class="secondary-btn" asp-action="Index"><i class="bi bi-arrow-left"></i> Quay lại</a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <section class="panel">
+            <h4 class="mb-3">Thêm nhân sự mới</h4>
+            <form asp-action="AddMember" asp-route-id="@Model.ProjId" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label class="form-label">Chọn nhân viên</label>
+                    <select name="EmpId" asp-items="Model.AssignmentForm.Employees" class="form-select">
+                        <option value="">-- Chọn nhân viên --</option>
+                    </select>
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label">Giờ bắt đầu</label>
+                        <input name="StartTime" type="time" value="08:00" class="form-control" />
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Giờ kết thúc</label>
+                        <input name="EndTime" type="time" value="17:00" class="form-control" />
+                    </div>
+                </div>
+
+                <button class="primary-btn w-100" type="submit"><i class="bi bi-person-plus"></i> Thêm vào dự án</button>
+            </form>
+        </section>
+    </div>
+
+    <div class="col-md-8">
+        <section class="panel">
+            <h4 class="mb-3">Danh sách thành viên (@Model.Assignments.Count)</h4>
+            <div class="table-responsive">
+                <table class="table table-modern align-middle">
+                    <thead>
+                        <tr>
+                            <th>Mã NV</th>
+                            <th>Họ và tên</th>
+                            <th>Bắt đầu</th>
+                            <th>Kết thúc</th>
+                            <th class="text-end">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @if (!Model.Assignments.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">Chưa có nhân sự nào được phân công.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var item in Model.Assignments)
+                        {
+                            <tr>
+                                <td><code>#@item.EmpId</code></td>
+                                <td><strong>@item.Emp.Name</strong></td>
+                                <td>@item.StartTime.ToString("HH:mm")</td>
+                                <td>@item.EndTime.ToString("HH:mm")</td>
+                                <td class="text-end">
+                                    <form asp-action="RemoveMember" asp-route-id="@Model.ProjId" method="post" onsubmit="return confirm('Bạn chắc chắn muốn loại nhân viên này khỏi dự án?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="empId" value="@item.EmpId" />
+                                        <button class="icon-link danger" type="submit"><i class="bi bi-person-x"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>

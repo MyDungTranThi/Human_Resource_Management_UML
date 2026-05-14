@@ -1,0 +1,140 @@
+@model HRM.Web.Models.ViewModels.Payroll.PayrollIndexViewModel
+@{
+    ViewData["Title"] = "Báo cáo tiền lương";
+}
+
+<div class="page-head page-head-actions">
+    <div>
+        <h1>Báo cáo tiền lương</h1>
+        <p>Quản lý trả lương, thuế và báo cáo tự động.</p>
+    </div>
+    <div class="head-actions">
+        <a class="secondary-btn" asp-action="ExportPdf" asp-route-month="@Model.Month" asp-route-year="@Model.Year" asp-route-search="@Model.Search"><i class="bi bi-filetype-pdf"></i> Xuất PDF</a>
+        <a class="secondary-btn" asp-action="ExportExcel" asp-route-month="@Model.Month" asp-route-year="@Model.Year" asp-route-search="@Model.Search"><i class="bi bi-file-earmark-excel"></i> Xuất Excel</a>
+
+        <form asp-action="Calculate" method="post" class="m-0">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="month" value="@Model.Month" />
+            <input type="hidden" name="year" value="@Model.Year" />
+            <button class="primary-btn" type="submit"><i class="bi bi-calculator-fill"></i> Tính lương</button>
+        </form>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(TempData["Success"] as string))
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (!string.IsNullOrWhiteSpace(TempData["Error"] as string))
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<section class="content-grid payroll-layout mb-4">
+    <article class="panel">
+        <form method="get" class="filter-grid compact">
+            <div>
+                <label class="form-label">Tháng</label>
+                <input class="form-control" type="number" min="1" max="12" name="month" value="@Model.Month" />
+            </div>
+            <div>
+                <label class="form-label">Năm</label>
+                <input class="form-control" type="number" min="2000" max="2100" name="year" value="@Model.Year" />
+            </div>
+            <div>
+                <label class="form-label">Nhân viên / Phòng ban</label>
+                <input class="form-control" name="search" value="@Model.Search" placeholder="Tìm kiếm hồ sơ lương..." />
+            </div>
+            <div class="filter-actions align-end">
+                <button class="primary-btn" type="submit"><i class="bi bi-funnel-fill"></i> Áp dụng bộ lọc</button>
+            </div>
+        </form>
+    </article>
+
+    <article class="panel panel-strong">
+        <div class="stat-title">TỔNG GIÁ TRỊ LƯƠNG</div>
+        <div class="stat-value">@Model.TotalNetSalary.ToString("N0")</div>
+        <div class="metric-note">+ 4.2% so với tháng trước</div>
+    </article>
+</section>
+
+<section class="panel">
+    <div class="panel-head">
+        <h4>Bảng lương nhân viên - @Model.Month/@Model.Year</h4>
+        <span class="status-tag active">Sẵn sàng duyệt</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-modern align-middle">
+            <thead>
+                <tr>
+                    <th>Nhân viên</th>
+                    <th>Phòng ban</th>
+                    <th>Lương cơ bản</th>
+                    <th>Thưởng</th>
+                    <th>Khấu trừ</th>
+                    <th>Lương thực nhận</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Lines.Count == 0)
+                {
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">Chưa có dữ liệu lương. Nhấn Tính lương để tạo.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var line in Model.Lines)
+                    {
+                        <tr>
+                            <td>
+                                <div class="person-cell">
+                                    <div class="avatar-mini">@line.EmployeeName.Substring(0, 1).ToUpperInvariant()</div>
+                                    <div>
+                                        <div class="fw-semibold">@line.EmployeeName</div>
+                                        <small>#@line.EmpId</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@line.DepartmentName</td>
+                            <td>@line.BaseSalary.ToString("N0")</td>
+                            <td class="text-success">+@line.Bonus.ToString("N0")</td>
+                            <td class="text-danger">-@line.Deduction.ToString("N0")</td>
+                            <td class="fw-bold">@line.NetSalary.ToString("N0")</td>
+                            <td>
+                                @if (line.IsPaid)
+                                {
+                                    <span class="status-tag processed">Đã xử lý</span>
+                                }
+                                else
+                                {
+                                    <span class="status-tag pending">Chờ xử lý</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!line.IsPaid)
+                                {
+                                    <form asp-action="ConfirmPayment" method="post" class="m-0">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="empId" value="@line.EmpId" />
+                                        <input type="hidden" name="month" value="@Model.Month" />
+                                        <input type="hidden" name="year" value="@Model.Year" />
+                                        <input type="hidden" name="search" value="@Model.Search" />
+                                        <button class="secondary-btn" type="submit">Xác nhận</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">Đã duyệt</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

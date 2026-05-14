@@ -1,0 +1,80 @@
+@model HRM.Web.Models.ViewModels.Reports.ReportsDashboardViewModel
+@{
+    ViewData["Title"] = "Báo cáo thống kê";
+}
+
+<div class="page-head page-head-actions">
+    <div>
+        <h1>Báo cáo thống kê</h1>
+        <p>Xem tổng quan hiệu suất tổ chức và dữ liệu tài chính.</p>
+    </div>
+    <div class="head-actions">
+        <a class="secondary-btn" asp-controller="Payroll" asp-action="ExportPdf" asp-route-month="@DateTime.Today.Month" asp-route-year="@DateTime.Today.Year"><i class="bi bi-filetype-pdf"></i> Xuất PDF</a>
+        <a class="primary-btn" asp-controller="Payroll" asp-action="ExportExcel" asp-route-month="@DateTime.Today.Month" asp-route-year="@DateTime.Today.Year"><i class="bi bi-file-earmark-excel"></i> Xuất Excel</a>
+    </div>
+</div>
+
+<section class="metric-grid mb-4">
+    <article class="metric-card">
+        <div class="metric-icon icon-blue"><i class="bi bi-people-fill"></i></div>
+        <div class="metric-label">Tổng số nhân sự</div>
+        <div class="metric-value">@Model.TotalHeadcount.ToString("N0")</div>
+    </article>
+
+    <article class="metric-card">
+        <div class="metric-icon icon-mint"><i class="bi bi-cash-stack"></i></div>
+        <div class="metric-label">Chi phí lương</div>
+        <div class="metric-value">@Model.PayrollCost.ToString("N0")</div>
+    </article>
+
+    <article class="metric-card">
+        <div class="metric-icon icon-peach"><i class="bi bi-kanban-fill"></i></div>
+        <div class="metric-label">Dự án đang hoạt động</div>
+        <div class="metric-value">@Model.ActiveProjects Hoạt động</div>
+    </article>
+
+    <article class="metric-card">
+        <div class="metric-icon icon-violet"><i class="bi bi-clock-fill"></i></div>
+        <div class="metric-label">Thâm niên trung bình</div>
+        <div class="metric-value">@Model.AverageTenureYears.ToString("N1") năm</div>
+    </article>
+</section>
+
+<section class="content-grid two-columns">
+    <article class="panel">
+        <h4>Tăng trưởng nhân sự và chi phí</h4>
+        <div class="comparison-chart">
+            @foreach (var point in Model.MonthlyPayrollTrend)
+            {
+                var maxPayroll = Model.MonthlyPayrollTrend.Max(x => x.Payroll);
+                var maxBudget = Model.MonthlyPayrollTrend.Max(x => x.Budget);
+                var payrollHeight = (int)Math.Max(8m, point.Payroll / (maxPayroll == 0 ? 1 : maxPayroll) * 100m);
+                var budgetHeight = (int)Math.Max(8m, point.Budget / (maxBudget == 0 ? 1 : maxBudget) * 100m);
+
+                <div class="comparison-group">
+                    <div class="bar bar-primary" style="height:@payrollHeight%"></div>
+                    <div class="bar bar-secondary" style="height:@budgetHeight%"></div>
+                    <span>@point.Label.Split(' ')[0]</span>
+                </div>
+            }
+        </div>
+    </article>
+
+    <article class="panel">
+        <h4>Tỷ lệ giữ chân theo phòng ban</h4>
+        <div class="retention-list">
+            @foreach (var item in Model.DepartmentRetention)
+            {
+                <div class="retention-item">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>@item.DepartmentName</span>
+                        <strong>@item.RetentionPercent%</strong>
+                    </div>
+                    <div class="progress progress-thin">
+                        <div class="progress-bar" style="width:@item.RetentionPercent%"></div>
+                    </div>
+                </div>
+            }
+        </div>
+    </article>
+</section>

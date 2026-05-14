@@ -1,0 +1,45 @@
+@model HRM.Web.Models.ViewModels.Projects.ProjectFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <label asp-for="ProjName" class="form-label"></label>
+        <input asp-for="ProjName" class="form-control" />
+        <span asp-validation-for="ProjName" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-3">
+        <label asp-for="ProjStartDate" class="form-label"></label>
+        <input asp-for="ProjStartDate" type="date" class="form-control" />
+        <span asp-validation-for="ProjStartDate" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-3">
+        <label asp-for="ProjEndDate" class="form-label"></label>
+        <input asp-for="ProjEndDate" type="date" class="form-control" />
+        <span asp-validation-for="ProjEndDate" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="ProjStatus" class="form-label"></label>
+        <select asp-for="ProjStatus" asp-items="Model.StatusOptions" class="form-select">
+            <option value="">-- Chọn trạng thái dự án --</option>
+        </select>
+        <span asp-validation-for="ProjStatus" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="Budget" class="form-label"></label>
+        <input asp-for="Budget" class="form-control" />
+        <span asp-validation-for="Budget" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="DeptId" class="form-label"></label>
+        <select asp-for="DeptId" asp-items="Model.Departments" class="form-select">
+            <option value="">-- Chọn phòng ban phụ trách --</option>
+        </select>
+        <span asp-validation-for="DeptId" class="text-danger"></span>
+    </div>
+</div>

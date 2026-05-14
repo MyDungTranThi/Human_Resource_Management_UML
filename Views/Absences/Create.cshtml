@@ -1,0 +1,49 @@
+@model HRM.Web.Models.ViewModels.Absences.AbsenceFormViewModel
+@{
+    ViewData["Title"] = "Thêm ngày nghỉ";
+}
+
+<div class="page-head">
+    <h1>Thêm ngày nghỉ</h1>
+    <p>Nhập thông tin nghỉ của nhân viên để hệ thống tự động trừ lương.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <section class="panel">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="EmpId" class="form-label">Nhân viên</label>
+                    <select asp-for="EmpId" asp-items="Model.Employees" class="form-select">
+                        <option value="">-- Chọn nhân viên --</option>
+                    </select>
+                    <span asp-validation-for="EmpId" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="AbsenceDate" class="form-label">Ngày nghỉ</label>
+                    <input asp-for="AbsenceDate" type="date" class="form-control" />
+                    <span asp-validation-for="AbsenceDate" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Reason" class="form-label">Lý do</label>
+                    <textarea asp-for="Reason" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Reason" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input asp-for="IsUnpaid" class="form-check-input" />
+                    <label asp-for="IsUnpaid" class="form-check-label">Nghỉ không lương (Sẽ bị trừ tiền)</label>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="primary-btn">Lưu lại</button>
+                    <a asp-action="Index" class="secondary-btn">Hủy bỏ</a>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>

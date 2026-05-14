@@ -1,0 +1,149 @@
+@model HRM.Web.Models.ViewModels.Projects.ProjectIndexViewModel
+@{
+    ViewData["Title"] = "Quản lý dự án";
+    var currentItems = Model.PagedProjects.Items;
+    var activeCount = currentItems.Count(x => x.ProjStatus == "On Going");
+}
+
+<div class="page-head page-head-actions">
+    <div>
+        <h1>Quản lý phòng ban & dự án</h1>
+        <p>Quản lý cấu trúc tổ chức và công việc đang triển khai.</p>
+    </div>
+    <div class="head-actions">
+        <a class="secondary-btn" asp-action="ExportPdf"><i class="bi bi-filetype-pdf"></i> Xuất PDF</a>
+        <a class="secondary-btn" asp-action="ExportExcel"><i class="bi bi-file-earmark-excel"></i> Xuất Excel</a>
+        <a class="primary-btn" asp-action="Create"><i class="bi bi-plus-square-fill"></i> Tạo dự án</a>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(TempData["Success"] as string))
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (!string.IsNullOrWhiteSpace(TempData["Error"] as string))
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<section class="metric-grid mini mb-4">
+    <article class="metric-card">
+        <div class="metric-label">Dự án đang hoạt động</div>
+        <div class="metric-value">@activeCount</div>
+        <div class="metric-note">Số liệu trang hiện tại</div>
+    </article>
+    <article class="metric-card">
+        <div class="metric-label">Dự án hiển thị</div>
+        <div class="metric-value">@currentItems.Count</div>
+        <div class="metric-note">Số dòng @Model.PageSize</div>
+    </article>
+    <article class="metric-card">
+        <div class="metric-label">Phân bổ nhân sự</div>
+        <div class="metric-value">92%</div>
+        <div class="progress progress-thin">
+            <div class="progress-bar" style="width: 92%"></div>
+        </div>
+    </article>
+</section>
+
+<section class="panel mb-4">
+    <form method="get" class="filter-grid">
+        <div>
+            <label class="form-label">Tìm kiếm</label>
+            <input class="form-control" name="search" value="@Model.Search" placeholder="Tìm dự án, trạng thái, quản lý..." />
+        </div>
+        <div>
+            <label class="form-label">Số dòng</label>
+            <select class="form-select" name="pageSize">
+                @foreach (var size in new[] { 10, 20, 50 })
+                {
+                    <option value="@size" selected="@(Model.PageSize == size)">@size</option>
+                }
+            </select>
+        </div>
+        <div class="filter-actions">
+            <button class="primary-btn" type="submit"><i class="bi bi-funnel-fill"></i> Áp dụng bộ lọc</button>
+            <a class="secondary-btn" asp-action="Index">Xóa</a>
+        </div>
+    </form>
+</section>
+
+<section class="content-grid projects-layout">
+    <article class="panel">
+        <h4>Danh sách dự án</h4>
+        <div class="table-responsive">
+            <table class="table table-modern align-middle">
+                <thead>
+                    <tr>
+                        <th>Tên dự án</th>
+                        <th>Trạng thái</th>
+                        <th>Nhóm thực hiện</th>
+                        <th>Ngân sách</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @if (currentItems.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">Không tìm thấy dự án nào.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var project in currentItems)
+                    {
+                        var statusClass = project.ProjStatus.Contains("On Going", StringComparison.OrdinalIgnoreCase) ? "active"
+                            : project.ProjStatus.Contains("Not started", StringComparison.OrdinalIgnoreCase) ? "pending"
+                            : project.ProjStatus.Contains("Done", StringComparison.OrdinalIgnoreCase) ? "terminated"
+                            : "processed";
+
+                        <tr>
+                            <td>
+                                <strong>@project.ProjName</strong>
+                                <br /><small>@project.ProjStartDate.ToString("yyyy-MM-dd") -> @(project.ProjEndDate?.ToString("yyyy-MM-dd") ?? "Đang chạy")</small>
+                            </td>
+                            <td><span class="status-tag @statusClass">@project.ProjStatus</span></td>
+                            <td>@project.Assigns.Count thành viên</td>
+                            <td>@project.Budget.ToString("N0")</td>
+                            <td>
+                                <div class="action-inline">
+                                    <a class="icon-link" asp-action="Members" asp-route-id="@project.ProjId" title="Thành viên"><i class="bi bi-people"></i></a>
+                                    <a class="icon-link" asp-action="Edit" asp-route-id="@project.ProjId" title="Chỉnh sửa"><i class="bi bi-pencil"></i></a>
+                                    <form asp-action="Delete" asp-route-id="@project.ProjId" method="post" onsubmit="return confirm('Xóa dự án này?');">
+                                        @Html.AntiForgeryToken()
+                                        <button class="icon-link danger" type="submit" title="Xóa"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                </tbody>
+            </table>
+        </div>
+
+        @if (Model.PagedProjects.TotalPages > 1)
+        {
+            <nav class="pager-wrap">
+                <span>Trang @Model.PagedProjects.Page trên @Model.PagedProjects.TotalPages</span>
+                <ul class="pagination mb-0">
+                    @for (var i = 1; i <= Model.PagedProjects.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.PagedProjects.Page ? "active" : string.Empty)">
+                            <a class="page-link" asp-action="Index" asp-route-search="@Model.Search" asp-route-page="@i" asp-route-pageSize="@Model.PageSize">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    </article>
+
+    <article class="panel panel-highlight">
+        <h4>Phân bổ nguồn lực</h4>
+        <p>Phân công nhân sự cho các dự án đang triển khai một cách hiệu quả.</p>
+        <a class="primary-btn w-100" asp-action="Create"><i class="bi bi-plus-circle"></i> Dự án mới</a>
+        <a class="secondary-btn w-100 mt-2" asp-controller="Departments" asp-action="Index"><i class="bi bi-diagram-3"></i> Danh sách phòng ban</a>
+        <a class="secondary-btn w-100 mt-2" asp-controller="Reports" asp-action="Index"><i class="bi bi-bar-chart"></i> Xem báo cáo tổng hợp</a>
+    </article>
+</section>

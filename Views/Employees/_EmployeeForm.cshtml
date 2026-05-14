@@ -1,0 +1,140 @@
+@model HRM.Web.Models.ViewModels.Employees.EmployeeFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-3">
+        <label asp-for="DateOfBirth" class="form-label"></label>
+        <input asp-for="DateOfBirth" type="date" class="form-control" />
+        <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Gender</label>
+        <select asp-for="Gender" class="form-select">
+            <option value="true">Male</option>
+            <option value="false">Female</option>
+        </select>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="PhoneNumber" class="form-label"></label>
+        <input asp-for="PhoneNumber" class="form-control" />
+        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-12">
+        <label asp-for="Address" class="form-label"></label>
+        <input asp-for="Address" class="form-control" />
+        <span asp-validation-for="Address" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="DeptId" class="form-label">Department</label>
+        <select id="deptSelect" asp-for="DeptId" asp-items="Model.Departments" class="form-select">
+            <option value="">-- Chon phong ban --</option>
+        </select>
+        <span asp-validation-for="DeptId" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Manager <span class="text-muted small">(theo phòng ban)</span></label>
+        <input id="managerNameDisplay"
+               type="text"
+               class="form-control"
+               value="@(Model.ManagerName ?? "(Chọn phòng ban trước)")"
+               readonly
+               style="background-color: #f8f9fa; cursor: default;" />
+        <input asp-for="ManagerId" type="hidden" id="managerIdHidden" />
+        <small class="text-muted">Manager tự động theo phòng ban</small>
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Chức vụ</label>
+        @if (Model.CanEditPosition)
+        {
+            <select asp-for="PositionId" asp-items="Model.Positions" class="form-select">
+                <option value="">-- Chọn chức vụ --</option>
+            </select>
+        }
+        else
+        {
+            <input class="form-control" value="@Model.PositionName" readonly />
+        }
+        <span asp-validation-for="PositionId" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="Status" class="form-label">Trạng thái</label>
+        <select asp-for="Status" asp-items="Model.StatusOptions" class="form-select">
+            <option value="">-- Chọn trạng thái --</option>
+        </select>
+        <span asp-validation-for="Status" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="AnnualLeaveDays" class="form-label"></label>
+        <input asp-for="AnnualLeaveDays" class="form-control" />
+        <span asp-validation-for="AnnualLeaveDays" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-8">
+        <label asp-for="ImagePath" class="form-label"></label>
+        <input asp-for="ImagePath" class="form-control" />
+        <span asp-validation-for="ImagePath" class="text-danger"></span>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const deptSelect = document.getElementById('deptSelect');
+        const managerNameDisplay = document.getElementById('managerNameDisplay');
+        const managerIdHidden = document.getElementById('managerIdHidden');
+
+        if (!deptSelect) return;
+
+        function loadManager(deptId) {
+            if (!deptId) {
+                managerNameDisplay.value = '(Chọn phòng ban trước)';
+                managerIdHidden.value = '';
+                return;
+            }
+
+            managerNameDisplay.value = 'Đang tải...';
+            fetch(`/Employees/GetDeptManager?deptId=${deptId}`)
+                .then(res => {
+                    if (!res.ok) throw new Error('Not found');
+                    return res.json();
+                })
+                .then(data => {
+                    managerNameDisplay.value = data.managerName;
+                    managerIdHidden.value = data.managerId;
+                })
+                .catch(() => {
+                    managerNameDisplay.value = '(Chưa có manager)';
+                    managerIdHidden.value = '';
+                });
+        }
+
+        deptSelect.addEventListener('change', function () {
+            loadManager(this.value);
+        });
+
+        // Load ngay khi form đã có DeptId sẵn (trường hợp Edit)
+        if (deptSelect.value) {
+            loadManager(deptSelect.value);
+        }
+    })();
+</script>
