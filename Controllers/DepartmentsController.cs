@@ -371,11 +371,24 @@ public class DepartmentsController : Controller
             .Where(id => id != null)
             .ToListAsync();
 
-        // 2. Lấy tất cả nhân viên kèm Phòng ban và Chức vụ để kiểm tra
-        var employees = await _context.Employees
+        // 2. Lấy nhân viên kèm Phòng ban và Chức vụ, lọc theo phòng ban
+        var employeesQuery = _context.Employees
             .Include(x => x.Dept)
             .Include(x => x.Pos)
-            .Where(x => !otherManagers.Contains(x.EmpId))
+            .Where(x => !otherManagers.Contains(x.EmpId));
+
+        if (model.DeptId.HasValue && model.DeptId.Value > 0)
+        {
+            // Nếu đang Edit: chỉ chọn nhân viên đang ở phòng này, hoặc chưa có phòng
+            employeesQuery = employeesQuery.Where(x => x.DeptId == model.DeptId.Value || x.DeptId == null);
+        }
+        else
+        {
+            // Nếu đang Create: chỉ chọn nhân viên chưa thuộc phòng nào
+            employeesQuery = employeesQuery.Where(x => x.DeptId == null);
+        }
+
+        var employees = await employeesQuery
             .OrderBy(x => x.Name)
             .ToListAsync();
 

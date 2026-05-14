@@ -416,3 +416,4 @@ D:\DH_GTVT\ThirdYear\UML\BTL\BTL_UML_WEB\HRM.Web\obj\check_build\runtimes\win\li
 D:\DH_GTVT\ThirdYear\UML\BTL\BTL_UML_WEB\HRM.Web\obj\check_build\runtimes\win\lib\net8.0\System.Security.Cryptography.Pkcs.dll
 D:\DH_GTVT\ThirdYear\UML\BTL\BTL_UML_WEB\HRM.Web\obj\check_build\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
 D:\DH_GTVT\ThirdYear\UML\BTL\BTL_UML_WEB\HRM.Web\obj\check_build\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
+D:\DH_GTVT\ThirdYear\UML\BTL\BTL_UML_WEB\HRM.Web\obj\Debug\net8.0\HRM.Web.sourcelink.json
