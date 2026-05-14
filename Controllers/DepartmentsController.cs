@@ -382,15 +382,19 @@ public class DepartmentsController : Controller
             // Nếu đang Edit: chỉ chọn nhân viên đang ở phòng này, hoặc chưa có phòng
             employeesQuery = employeesQuery.Where(x => x.DeptId == model.DeptId.Value || x.DeptId == null);
         }
-        else
-        {
-            // Nếu đang Create: chỉ chọn nhân viên chưa thuộc phòng nào
-            employeesQuery = employeesQuery.Where(x => x.DeptId == null);
-        }
 
         var employees = await employeesQuery
             .OrderBy(x => x.Name)
             .ToListAsync();
+
+        if (!model.DeptId.HasValue || model.DeptId.Value == 0)
+        {
+            // Nếu đang Create: lọc in-memory để tìm các nhân viên có chức vụ là Dept head / Trưởng phòng
+            employees = employees.Where(x => x.Pos.Any(p => 
+                p.PosName.Contains("head", StringComparison.OrdinalIgnoreCase) || 
+                p.PosName.Contains("Trưởng", StringComparison.OrdinalIgnoreCase) ||
+                p.PosName.Contains("Dept", StringComparison.OrdinalIgnoreCase))).ToList();
+        }
 
         // 3. Tạo danh sách chọn với đầy đủ thông tin để chẩn đoán
         model.Managers = employees.Select(x => new SelectListItem
