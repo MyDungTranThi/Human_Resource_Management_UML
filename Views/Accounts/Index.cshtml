@@ -1,0 +1,114 @@
+@model HRM.Web.Models.ViewModels.Accounts.AccountIndexViewModel
+@{
+    ViewData["Title"] = "Quản lý Tài khoản";
+}
+
+<div class="page-head page-head-actions">
+    <div>
+        <h1>Quản lý Tài khoản</h1>
+        <p>Thêm, sửa, xoá và phân quyền tài khoản đăng nhập.</p>
+    </div>
+    <div class="head-actions">
+        <a class="primary-btn" asp-action="Create"><i class="bi bi-person-plus-fill"></i> Thêm tài khoản</a>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(TempData["Success"] as string))
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (!string.IsNullOrWhiteSpace(TempData["Error"] as string))
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<section class="panel mb-4">
+    <form method="get" class="filter-grid">
+        <div>
+            <label class="form-label">Tìm kiếm</label>
+            <input class="form-control" name="search" value="@Model.Search" placeholder="Tìm tên đăng nhập hoặc nhân viên..." />
+        </div>
+        <div>
+            <label class="form-label">Số dòng</label>
+            <select class="form-select" name="pageSize">
+                @foreach (var size in new[] { 10, 20, 50 })
+                {
+                    <option value="@size" selected="@(Model.PageSize == size)">@size</option>
+                }
+            </select>
+        </div>
+        <div class="filter-actions">
+            <button class="primary-btn" type="submit"><i class="bi bi-funnel-fill"></i> Áp dụng bộ lọc</button>
+            <a class="secondary-btn" asp-action="Index">Xóa</a>
+        </div>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="table-responsive">
+        <table class="table table-modern align-middle">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tên đăng nhập</th>
+                    <th>Nhân viên</th>
+                    <th>Quyền (Role)</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.PagedAccounts.Items.Count == 0)
+                {
+                    <tr><td colspan="6" class="text-center text-muted">Không tìm thấy tài khoản nào.</td></tr>
+                }
+                else
+                {
+                    foreach (var acc in Model.PagedAccounts.Items)
+                    {
+                        <tr>
+                            <td>#@acc.AccountId</td>
+                            <td><strong>@acc.Username</strong></td>
+                            <td>@(acc.Emp?.Name ?? "Chưa gán")</td>
+                            <td><span class="status-tag processed">@acc.Role</span></td>
+                            <td>
+                                @if (acc.IsActive == true)
+                                {
+                                    <span class="status-tag active">Hoạt động</span>
+                                }
+                                else
+                                {
+                                    <span class="status-tag inactive" style="background:var(--danger-color);color:white;">Đã khoá</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="action-inline">
+                                    <a class="icon-link" asp-action="Edit" asp-route-id="@acc.AccountId" title="Chỉnh sửa"><i class="bi bi-pencil"></i></a>
+                                    <form asp-action="Delete" asp-route-id="@acc.AccountId" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xoá tài khoản này không?');">
+                                        @Html.AntiForgeryToken()
+                                        <button class="icon-link danger" type="submit" title="Xóa"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.PagedAccounts.TotalPages > 1)
+    {
+        <nav class="pager-wrap">
+            <span>Trang @Model.PagedAccounts.Page trên @Model.PagedAccounts.TotalPages</span>
+            <ul class="pagination mb-0">
+                @for (var i = 1; i <= Model.PagedAccounts.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.PagedAccounts.Page ? "active" : string.Empty)">
+                        <a class="page-link" asp-action="Index" asp-route-search="@Model.Search" asp-route-page="@i" asp-route-pageSize="@Model.PageSize">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</section>

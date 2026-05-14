@@ -1,0 +1,44 @@
+@model HRM.Web.Models.ViewModels.Accounts.AccountFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label asp-for="Username" class="form-label"></label>
+        <input asp-for="Username" class="form-control" />
+        <span asp-validation-for="Username" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label asp-for="Password" class="form-label"></label>
+        <input asp-for="Password" type="password" class="form-control" />
+        <span asp-validation-for="Password" class="text-danger"></span>
+        @if (Model.AccountId > 0)
+        {
+            <small class="form-text text-muted">Bỏ trống nếu không muốn thay đổi mật khẩu.</small>
+        }
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label asp-for="EmpId" class="form-label"></label>
+        <select asp-for="EmpId" asp-items="Model.Employees" class="form-select">
+            <option value="">-- Không gán nhân viên --</option>
+        </select>
+        <span asp-validation-for="EmpId" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label asp-for="Role" class="form-label"></label>
+        <select asp-for="Role" asp-items="Model.Roles" class="form-select">
+            <option value="">-- Chọn quyền hạn --</option>
+        </select>
+        <span asp-validation-for="Role" class="text-danger"></span>
+    </div>
+</div>
+
+<div class="mb-3 form-check">
+    <input asp-for="IsActive" class="form-check-input" />
+    <label asp-for="IsActive" class="form-check-label">Cho phép đăng nhập (Hoạt động)</label>
+</div>

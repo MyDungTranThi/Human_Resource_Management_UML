@@ -1,0 +1,21 @@
+@model HRM.Web.Models.ViewModels.Accounts.AccountFormViewModel
+@{
+    ViewData["Title"] = "Thêm mới Tài khoản";
+}
+
+<div class="page-head">
+    <h1>@ViewData["Title"]</h1>
+</div>
+
+<section class="panel">
+    <form asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+        
+        <partial name="_AccountForm" model="Model" />
+
+        <div class="mt-4">
+            <button type="submit" class="primary-btn"><i class="bi bi-save"></i> Lưu tài khoản</button>
+            <a asp-action="Index" class="secondary-btn">Hủy</a>
+        </div>
+    </form>
+</section>
