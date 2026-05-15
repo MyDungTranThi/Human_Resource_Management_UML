@@ -72,9 +72,17 @@ public class PayrollController : Controller
             .Select(g => new { g.Key, WorkDays = g.Select(x => x.WorkDate).Distinct().Count() })
             .ToDictionaryAsync(x => x.Key, x => x.WorkDays);
 
-        // Lấy số ngày nghỉ không lương trong tháng (do HR nhập tay)
-        var absencesByEmployee = await _context.Absences
-            .Where(x => x.AbsenceDate >= start && x.AbsenceDate < end && x.IsUnpaid)
+        // Tính tổng số ngày nghỉ từ đầu năm đến trước tháng hiện tại
+        var yearStart = new DateOnly(year, 1, 1);
+        var absencesBeforeMonth = await _context.Absences
+            .Where(x => x.AbsenceDate >= yearStart && x.AbsenceDate < start)
+            .GroupBy(x => x.EmpId)
+            .Select(g => new { g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.Key, x => x.Count);
+
+        // Lấy số ngày nghỉ trong tháng hiện tại (tất cả các ngày nghỉ, không phân biệt IsUnpaid)
+        var absencesInMonth = await _context.Absences
+            .Where(x => x.AbsenceDate >= start && x.AbsenceDate < end)
             .GroupBy(x => x.EmpId)
             .Select(g => new { g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.Key, x => x.Count);
@@ -102,8 +110,18 @@ public class PayrollController : Controller
 
             var bonus = bonusByEmployee.TryGetValue(employee.EmpId, out var bonusValue) ? bonusValue : 0;
             
-            // Số ngày nghỉ không lương (lấy từ dữ liệu HR nhập tay)
-            decimal unpaidLeaveDays = absencesByEmployee.TryGetValue(employee.EmpId, out var count) ? count : 0;
+            // Tính số ngày nghỉ không lương tự động
+            var leavesBefore = absencesBeforeMonth.TryGetValue(employee.EmpId, out var countBefore) ? countBefore : 0;
+            var leavesInMonth = absencesInMonth.TryGetValue(employee.EmpId, out var countInMonth) ? countInMonth : 0;
+
+            // Lấy số ngày phép năm của nhân viên, nếu không có hoặc <= 0 thì mặc định là 12 ngày
+            var maxLeaveDaysPerYear = employee.AnnualLeaveDays > 0 ? employee.AnnualLeaveDays : 12m;
+
+            // Số ngày phép còn lại trước tháng này
+            var allowedPaidLeavesThisMonth = Math.Max(0m, maxLeaveDaysPerYear - leavesBefore);
+            
+            // Số ngày nghỉ vượt quá phép (trừ tiền)
+            decimal unpaidLeaveDays = Math.Max(0m, leavesInMonth - allowedPaidLeavesThisMonth);
 
             var perDaySalary = daysInMonth == 0 ? 0m : baseSalary / daysInMonth;
             var deduction = Math.Round(unpaidLeaveDays * perDaySalary, 2);

@@ -34,7 +34,44 @@ public class AbsencesController : Controller
             query = query.Where(x => x.Emp.Name.Contains(search) || x.Reason.Contains(search));
         }
 
-        var items = await query.OrderByDescending(x => x.AbsenceDate).ToListAsync();
+        var monthAbsences = await query
+            .OrderByDescending(x => x.AbsenceDate)
+            .ThenByDescending(x => x.AbsenceId)
+            .ToListAsync();
+        var empIds = monthAbsences.Select(x => x.EmpId).Distinct().ToList();
+
+        // Lấy tất cả ngày nghỉ trong năm của các nhân viên này để tính số ngày còn lại
+        var yearAbsences = await _context.Absences
+            .Where(x => empIds.Contains(x.EmpId) && x.AbsenceDate.Year == selectedYear)
+            .OrderBy(x => x.AbsenceDate)
+            .ToListAsync();
+
+        var employees = await _context.Employees
+            .Where(e => empIds.Contains(e.EmpId))
+            .ToDictionaryAsync(e => e.EmpId);
+
+        var items = monthAbsences.Select(abs =>
+        {
+            var emp = employees[abs.EmpId];
+            var maxLeaves = emp.AnnualLeaveDays > 0 ? emp.AnnualLeaveDays : 12m;
+            
+            // Đếm số ngày nghỉ tính đến thời điểm này trong năm
+            // Sử dụng thêm AbsenceId để phân biệt thứ tự nếu nghỉ nhiều lần cùng ngày (trước khi có validation ngăn chặn)
+            var countUntilThisDate = yearAbsences
+                .Where(ya => ya.EmpId == abs.EmpId && (ya.AbsenceDate < abs.AbsenceDate || (ya.AbsenceDate == abs.AbsenceDate && ya.AbsenceId <= abs.AbsenceId)))
+                .Count();
+
+            return new AbsenceListItemViewModel
+            {
+                AbsenceId = abs.AbsenceId,
+                EmpId = abs.EmpId,
+                EmployeeName = abs.Emp.Name,
+                AbsenceDate = abs.AbsenceDate,
+                Reason = abs.Reason,
+                IsUnpaid = abs.IsUnpaid,
+                RemainingPaidLeaves = Math.Max(0, maxLeaves - countUntilThisDate)
+            };
+        }).ToList();
 
         var model = new AbsenceIndexViewModel
         {
@@ -61,6 +98,15 @@ public class AbsencesController : Controller
     {
         if (!ModelState.IsValid)
         {
+            await PopulateEmployeesAsync(model);
+            return View(model);
+        }
+
+        // Kiểm tra xem nhân viên đã đăng ký nghỉ ngày này chưa
+        var exists = await _context.Absences.AnyAsync(a => a.EmpId == model.EmpId && a.AbsenceDate == model.AbsenceDate);
+        if (exists)
+        {
+            ModelState.AddModelError(nameof(model.AbsenceDate), "Nhân viên này đã đăng ký nghỉ ngày này rồi.");
             await PopulateEmployeesAsync(model);
             return View(model);
         }

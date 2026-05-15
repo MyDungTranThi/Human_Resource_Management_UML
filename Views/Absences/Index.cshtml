@@ -58,6 +58,7 @@
                     <th>Ngày nghỉ</th>
                     <th>Nhân viên</th>
                     <th>Lý do</th>
+                    <th>Phép free còn lại</th>
                     <th>Trừ lương?</th>
                     <th>Hành động</th>
                 </tr>
@@ -66,7 +67,7 @@
                 @if (!Model.Items.Any())
                 {
                     <tr>
-                        <td colspan="5" class="text-center text-muted">Không có dữ liệu nghỉ trong tháng này.</td>
+                        <td colspan="6" class="text-center text-muted">Không có dữ liệu nghỉ trong tháng này.</td>
                     </tr>
                 }
                 else
@@ -75,16 +76,26 @@
                     {
                         <tr>
                             <td>@item.AbsenceDate.ToString("dd/MM/yyyy")</td>
-                            <td><strong>@item.Emp.Name</strong> <small>(#@item.EmpId)</small></td>
+                            <td><strong>@item.EmployeeName</strong> <small>(#@item.EmpId)</small></td>
                             <td>@item.Reason</td>
                             <td>
-                                @if (item.IsUnpaid)
+                                @if (item.RemainingPaidLeaves > 0)
                                 {
-                                    <span class="badge bg-danger">Có (Nghỉ không lương)</span>
+                                    <span class="badge bg-info text-dark">Còn @item.RemainingPaidLeaves ngày</span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-success">Không (Nghỉ có lương)</span>
+                                    <span class="badge bg-secondary">0 ngày</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.RemainingPaidLeaves > 0)
+                                {
+                                    <span class="badge bg-success">Không (Có lương)</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Có (Khấu trừ)</span>
                                 }
                             </td>
                             <td>

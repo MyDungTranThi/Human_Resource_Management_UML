@@ -21,10 +21,21 @@ public class AbsenceFormViewModel
     public IEnumerable<SelectListItem> Employees { get; set; } = Array.Empty<SelectListItem>();
 }
 
+public class AbsenceListItemViewModel
+{
+    public int AbsenceId { get; set; }
+    public int EmpId { get; set; }
+    public string EmployeeName { get; set; } = null!;
+    public DateOnly AbsenceDate { get; set; }
+    public string? Reason { get; set; }
+    public bool IsUnpaid { get; set; }
+    public decimal RemainingPaidLeaves { get; set; }
+}
+
 public class AbsenceIndexViewModel
 {
     public int Month { get; set; }
     public int Year { get; set; }
     public string? Search { get; set; }
-    public List<HRM.Web.Models.Entities.Absence> Items { get; set; } = new();
+    public List<AbsenceListItemViewModel> Items { get; set; } = new();
 }

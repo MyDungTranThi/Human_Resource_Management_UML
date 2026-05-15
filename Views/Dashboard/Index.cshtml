@@ -45,18 +45,23 @@
     <article class="panel">
         <div class="panel-head">
             <h4>Xu hướng lương</h4>
-            <span class="chip">Năm 2026</span>
+            <span class="chip">Năm @DateTime.Today.Year</span>
         </div>
         <div class="bar-chart">
-            <div style="height:32%"></div>
-            <div style="height:48%"></div>
-            <div style="height:45%"></div>
-            <div style="height:58%"></div>
-            <div style="height:54%"></div>
-            <div style="height:70%"></div>
+            @{
+                var maxSalaryTrend = Model.SalaryTrend.Any() ? Model.SalaryTrend.Max(x => x.Total) : 0;
+            }
+            @foreach (var stat in Model.SalaryTrend)
+            {
+                var height = maxSalaryTrend > 0 ? (int)(stat.Total / maxSalaryTrend * 100) : 0;
+                <div style="height:@(height)%" title="@stat.MonthLabel: @stat.Total.ToString("N0")"></div>
+            }
         </div>
         <div class="bar-labels">
-            <span>Thg 1</span><span>Thg 2</span><span>Thg 3</span><span>Thg 4</span><span>Thg 5</span><span>Thg 6</span>
+            @foreach (var stat in Model.SalaryTrend)
+            {
+                <span>@stat.MonthLabel</span>
+            }
         </div>
     </article>
 
@@ -65,10 +70,15 @@
         <div class="distribution-wrap">
             <div class="donut"></div>
             <ul>
-                <li><span class="dot blue"></span>Kỹ thuật (45%)</li>
-                <li><span class="dot mint"></span>Marketing (20%)</li>
-                <li><span class="dot violet"></span>Bán hàng (25%)</li>
-                <li><span class="dot peach"></span>Khác (10%)</li>
+                @{
+                    var colors = new[] { "blue", "mint", "violet", "peach" };
+                    int colorIdx = 0;
+                }
+                @foreach (var dept in Model.DeptDistribution.Take(4))
+                {
+                    <li><span class="dot @colors[colorIdx % 4]"></span>@dept.DeptName (@dept.Percentage%)</li>
+                    colorIdx++;
+                }
             </ul>
         </div>
     </article>
@@ -78,7 +88,7 @@
     <article class="panel">
         <div class="panel-head">
             <h4>Hoạt động gần đây</h4>
-            <a class="link-help" asp-controller="Reports" asp-action="Index">Xem tất cả</a>
+            <a class="link-help" asp-controller="Absences" asp-action="Index">Xem tất cả</a>
         </div>
 
         <div class="table-responsive">
@@ -92,24 +102,24 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Jane Doe<br /><small>Kỹ thuật</small></td>
-                        <td>Thăng chức lên Trưởng nhóm</td>
-                        <td>2 giờ trước</td>
-                        <td><span class="status-tag active">Đang hoạt động</span></td>
-                    </tr>
-                    <tr>
-                        <td>Robert Black<br /><small>Tài chính</small></td>
-                        <td>Lương tháng 11 đã được duyệt</td>
-                        <td>5 giờ trước</td>
-                        <td><span class="status-tag processed">Đã xử lý</span></td>
-                    </tr>
-                    <tr>
-                        <td>Elena Rossi<br /><small>Dự án</small></td>
-                        <td>Đã phân công vào Migration dữ liệu</td>
-                        <td>Hôm nay</td>
-                        <td><span class="status-tag pending">Chờ xử lý</span></td>
-                    </tr>
+                    @if (!Model.Activities.Any())
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">Không có hoạt động gần đây.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var act in Model.Activities)
+                        {
+                            <tr>
+                                <td>@act.EmployeeName<br /><small>@act.DeptName</small></td>
+                                <td>@act.Action</td>
+                                <td>@act.DateLabel</td>
+                                <td><span class="status-tag @act.StatusClass">@act.Status</span></td>
+                            </tr>
+                        }
+                    }
                 </tbody>
             </table>
         </div>
